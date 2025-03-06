@@ -1,43 +1,44 @@
-package org.example
-
 import kotlin.math.max
 
-
-val scan = java.util.Scanner(System.`in`)
 val dailyLimit = 150_000
 val monthlyLimit = 600_000
 val excessRateVisa = 0.0075
 val excessRateMastercard = 0.006
-val transferCount = 75_000
+val limitTransferCount = 75_000
 val minCommisVisa = 35
 val minCommisMastercard = 20
+var transferCount = 0
 
 fun main() {
 
     println("Введите тип карты")
-    println("1 - Мир")
+    println("1 - МИР")
     println("2 - Visa")
     println("3 - MasterCard")
-    val cardType = scan.nextInt()
+    val cardType = readln()
     println("Введите сумму перевода")
-    val transfer = scan.nextInt()
+    val transfer = readln().toInt()
 
-    printCommis(calculateCommis(cardType, transfer, transferCount))
+    printCommis(calculateCommis(cardType = cardType, transfer, transferCount = transferCount))
+    transferCount += transfer
 }
 
-fun calculateCommis(cardType: Int, transfer: Int, transferCount: Int): Int {
-
-    if (transfer > dailyLimit) return -1 // Превышение суточного лимита
-    if (transfer > monthlyLimit) return -2 // Превышение месячного лимита
+fun calculateCommis(cardType: String = "МИР", transfer: Int, transferCount: Int = 0): Int {
+    if (transfer > dailyLimit) {
+        return -1 // Превышение суточного лимита>)
+    }
+    if (transferCount > monthlyLimit) {
+        return -2 // Превышение месячного лимита
+    }
 
     return when (cardType) {
-        1 -> 0 // Комиссия за карту МИР
-        2 -> max(minCommisVisa, (transfer * excessRateVisa).toInt()) // Комиссия за карту Visa
-        3 -> { // Комиссия за карту MasterCard
+        (cardType.equals("МИР") || cardType.equals("1") || cardType.equals(null)).toString() -> 0 // Комиссия за карту МИР
+        (cardType.equals("Visa") || cardType.equals("2")).toString() -> max(minCommisVisa, (transfer * excessRateVisa).toInt()) // Комиссия за карту Visa
+        (cardType.equals("MasterCard") || cardType.equals("3")).toString() -> { // Комиссия за карту MasterCard
             when {
-                transfer <= transferCount -> 0
+                transferCount <= limitTransferCount -> 0
                 else -> {
-                    val excessAmount = transfer - transferCount
+                    val excessAmount = transfer - limitTransferCount
                     val commis = (excessAmount * excessRateMastercard) + minCommisMastercard
                     commis.toInt()
                 }
