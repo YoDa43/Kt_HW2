@@ -7,7 +7,7 @@ val excessRateMastercard = 0.006
 val limitTransferCount = 75_000
 val minCommisVisa = 35
 val minCommisMastercard = 20
-var transferCount = 0
+
 
 fun main() {
 
@@ -19,12 +19,14 @@ fun main() {
     println("Введите сумму перевода")
     val transfer = readln().toInt()
 
-    printCommis(calculateCommis(cardType = cardType, transfer, transferCount = transferCount))
-    transferCount += transfer
+    printCommis(calculateCommis(cardType = cardType, transfer))
+
 }
 
 fun calculateCommis(cardType: String = "МИР", transfer: Int, transferCount: Int = 0): Int {
-    if (transfer > dailyLimit) {
+    var transferCount = 0
+    transferCount += transfer
+    if (transferCount > dailyLimit) {
         return -1 // Превышение суточного лимита>)
     }
     if (transferCount > monthlyLimit) {
@@ -32,19 +34,18 @@ fun calculateCommis(cardType: String = "МИР", transfer: Int, transferCount: I
     }
 
     return when (cardType) {
-        (cardType.equals("МИР") || cardType.equals("1") || cardType.equals(null)).toString() -> 0 // Комиссия за карту МИР
-        (cardType.equals("Visa") || cardType.equals("2")).toString() -> max(minCommisVisa, (transfer * excessRateVisa).toInt()) // Комиссия за карту Visa
-        (cardType.equals("MasterCard") || cardType.equals("3")).toString() -> { // Комиссия за карту MasterCard
+        "МИР", "1", null.toString(), "" -> 0// Комиссия за карту МИР
+        "Visa", "2" -> max(minCommisVisa, (transfer * excessRateVisa).toInt()) // Комиссия за карту Visa
+        "MasterCard", "3" -> { // Комиссия за карту MasterCard
             when {
                 transferCount <= limitTransferCount -> 0
                 else -> {
-                    val excessAmount = transfer - limitTransferCount
+                    val excessAmount = transferCount - limitTransferCount
                     val commis = (excessAmount * excessRateMastercard) + minCommisMastercard
                     commis.toInt()
                 }
             }
         }
-
         else -> -3 // Ошибка ввода типа карты
     }
 }
