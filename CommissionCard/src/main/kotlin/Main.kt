@@ -32,7 +32,6 @@ fun calculateCommis(cardType: String = "МИР", transfer: Int, transferCount: I
     if (transferCount > monthlyLimit) {
         return -2 // Превышение месячного лимита
     }
-
     return when (cardType) {
         "МИР", "1", null.toString(), "" -> 0// Комиссия за карту МИР
         "Visa", "2" -> max(minCommisVisa, (transfer * excessRateVisa).toInt()) // Комиссия за карту Visa
