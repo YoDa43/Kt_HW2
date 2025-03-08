@@ -8,7 +8,6 @@ val limitTransferCount = 75_000
 val minCommisVisa = 35
 val minCommisMastercard = 20
 
-
 fun main() {
 
     println("Введите тип карты")
@@ -20,16 +19,13 @@ fun main() {
     val transfer = readln().toInt()
 
     printCommis(calculateCommis(cardType = cardType, transfer))
-
 }
 
-fun calculateCommis(cardType: String = "МИР", transfer: Int, transferCount: Int = 0): Int {
-    var transferCount = 0
-    transferCount += transfer
-    if (transferCount > dailyLimit) {
+fun calculateCommis(cardType: String = "МИР", transfer: Int, transferTotal: Int = 0): Int {
+    if (transfer > dailyLimit) {  // Считаем один перевод за суточный лимит
         return -1 // Превышение суточного лимита>)
     }
-    if (transferCount > monthlyLimit) {
+    if (transferTotal + transfer > monthlyLimit) {
         return -2 // Превышение месячного лимита
     }
     return when (cardType) {
@@ -37,9 +33,10 @@ fun calculateCommis(cardType: String = "МИР", transfer: Int, transferCount: I
         "Visa", "2" -> max(minCommisVisa, (transfer * excessRateVisa).toInt()) // Комиссия за карту Visa
         "MasterCard", "3" -> { // Комиссия за карту MasterCard
             when {
-                transferCount <= limitTransferCount -> 0
+                transferTotal + transfer <= limitTransferCount -> 0
+                transferTotal > limitTransferCount -> (transfer * excessRateMastercard + minCommisMastercard).toInt()
                 else -> {
-                    val excessAmount = transferCount - limitTransferCount
+                    val excessAmount = transferTotal + transfer - limitTransferCount
                     val commis = (excessAmount * excessRateMastercard) + minCommisMastercard
                     commis.toInt()
                 }
@@ -55,4 +52,3 @@ fun printCommis(commis: Int) {
     else if (commis == -3) println("Ошибка ввода типа карты")
     else println("Перевод успешно выполнен. \nКомиссия составила: $commis")
 }
-
